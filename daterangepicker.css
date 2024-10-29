@@ -334,6 +334,9 @@
   color: #fff;
 }
 
+.daterangepicker .manual-date-input {
+  margin-top: 10px;
+}
 /*  Larger Screen Styling */
 @media (min-width: 564px) {
   .daterangepicker {

@@ -28,7 +28,7 @@
         // Browser globals
         root.daterangepicker = factory(root.moment, root.jQuery);
     }
-}(typeof window !== 'undefined' ? window : this, function(moment, $) {
+}(this, function(moment, $) {
     var DateRangePicker = function(element, options, cb) {
 
         //default settings for options
@@ -54,6 +54,7 @@
         this.linkedCalendars = true;
         this.autoUpdateInput = true;
         this.alwaysShowCalendars = false;
+        this.showManualInputs = true;
         this.ranges = {};
 
         this.opens = 'right';
@@ -104,10 +105,12 @@
                 '<div class="drp-calendar left">' +
                     '<div class="calendar-table"></div>' +
                     '<div class="calendar-time"></div>' +
+                    (this.showManualInputs ? '<input type="text" class="form-control manual-date-input left-input" placeholder="YYYY-MM-DD">' : '') +
                 '</div>' +
                 '<div class="drp-calendar right">' +
                     '<div class="calendar-table"></div>' +
                     '<div class="calendar-time"></div>' +
+                    (this.showManualInputs ? '<input type="text" class="form-control manual-date-input right-input" placeholder="YYYY-MM-DD">' : '') +
                 '</div>' +
                 '<div class="drp-buttons">' +
                     '<span class="drp-selected"></span>' +
@@ -278,6 +281,9 @@
         if (typeof options.alwaysShowCalendars === 'boolean')
             this.alwaysShowCalendars = options.alwaysShowCalendars;
 
+        if (typeof options.showManualInputs === 'boolean')
+            this.showManualInputs = options.showManualInputs;
+
         // update day names order to firstDay
         if (this.locale.firstDay != 0) {
             var iterator = this.locale.firstDay;
@@ -437,12 +443,15 @@
             this.element.on('click.daterangepicker', $.proxy(this.toggle, this));
             this.element.on('keydown.daterangepicker', $.proxy(this.toggle, this));
         }
-
+        if (this.showManualInputs) {
+            this.container.find('.manual-date-input').on('change', $.proxy(this.inputChanged, this));
+        }
         //
         // if attached to a text input, set the initial value
         //
 
         this.updateElement();
+        this.updateManualInputs();
 
     };
 
@@ -474,6 +483,8 @@
                 if (this.timePicker && this.timePickerIncrement)
                     this.startDate.minute(Math.floor(this.startDate.minute() / this.timePickerIncrement) * this.timePickerIncrement);
             }
+            
+            this.updateManualInputs();
 
             if (!this.isShowing)
                 this.updateElement();
@@ -481,6 +492,45 @@
             this.updateMonthsInView();
         },
 
+        inputChanged : function(e) {
+            if (!this.showManualInputs) return;
+
+            var input = $(e.target);
+            var date = moment(input.val(), 'YYYY-MM-DD');
+            
+            if (date.isValid()) {
+                if (input.hasClass('left-input')) {
+                    this.setStartDate(date);
+                    if (this.singleDatePicker) {
+                        this.setEndDate(date);
+                    }
+                } else if (input.hasClass('right-input')) {
+                    this.setEndDate(date);
+                }
+                
+                this.updateCalendars();
+            }
+        },
+        updateElement: function() {
+            if (this.element.is('input') && this.autoUpdateInput) {
+                var newValue = this.startDate.format(this.locale.format);
+                if (!this.singleDatePicker) {
+                    newValue += this.locale.separator + this.endDate.format(this.locale.format);
+                }
+                if (newValue !== this.element.val()) {
+                    this.element.val(newValue).trigger('change');
+                }
+            }
+        },
+        updateManualInputs: function() {
+            if (!this.showManualInputs) return;
+            if (this.startDate) {
+                this.container.find('.manual-date-input.left-input').val(this.startDate.format('YYYY-MM-DD'));
+            }
+            if (this.endDate) {
+                this.container.find('.manual-date-input.right-input').val(this.endDate.format('YYYY-MM-DD'));
+            }
+        },
         setEndDate: function(endDate) {
             if (typeof endDate === 'string')
                 this.endDate = moment(endDate, this.locale.format);
@@ -506,7 +556,7 @@
             this.previousRightTime = this.endDate.clone();
 
             this.container.find('.drp-selected').html(this.startDate.format(this.locale.format) + this.locale.separator + this.endDate.format(this.locale.format));
-
+            this.updateManualInputs();
             if (!this.isShowing)
                 this.updateElement();
 
@@ -604,6 +654,10 @@
                 }
                 this.leftCalendar.month.hour(hour).minute(minute).second(second);
                 this.rightCalendar.month.hour(hour).minute(minute).second(second);
+                this.updateManualInputs();
+                if (this.autoUpdateInput) {
+                    this.updateElement();
+                }
             }
 
             this.renderCalendar('left');
