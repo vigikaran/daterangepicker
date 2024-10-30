@@ -12,7 +12,7 @@
   left: 20px;
   z-index: 3001;
   display: none;
-  font-family: arial;
+  font-family: inherit;
   font-size: 15px;
   line-height: 1em;
 }
@@ -282,7 +282,6 @@
 .daterangepicker .drp-buttons .btn {
   margin-left: 8px;
   font-size: 12px;
-  font-weight: bold;
   padding: 4px 8px;
 }
 
@@ -336,6 +335,13 @@
 
 .daterangepicker .manual-date-input {
   margin-top: 10px;
+  padding: 0 6px 0 28px;
+}
+.daterangepicker .manual-date-input-icon {
+  position: absolute;
+  left: 8px;
+  top: 18px;
+  z-index: 1000;
 }
 /*  Larger Screen Styling */
 @media (min-width: 564px) {

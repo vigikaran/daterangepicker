@@ -105,17 +105,25 @@
                 '<div class="drp-calendar left">' +
                     '<div class="calendar-table"></div>' +
                     '<div class="calendar-time"></div>' +
-                    (this.showManualInputs ? '<input type="text" class="form-control manual-date-input left-input" placeholder="YYYY-MM-DD">' : '') +
+                    (this.showManualInputs ? 
+                        '<div class="input-group w-100">' +
+                            '<input type="text" class="form-control manual-date-input left-input" placeholder="YYYY-MM-DD">' +
+                            '<i class="manual-date-input-icon fa fa-calendar glyphicon glyphicon-calendar"></i>' +
+                        '</div>' : '') +
                 '</div>' +
                 '<div class="drp-calendar right">' +
                     '<div class="calendar-table"></div>' +
                     '<div class="calendar-time"></div>' +
-                    (this.showManualInputs ? '<input type="text" class="form-control manual-date-input right-input" placeholder="YYYY-MM-DD">' : '') +
+                    (this.showManualInputs ? 
+                        '<div class="input-group w-100">' +
+                            '<input type="text" class="form-control manual-date-input right-input" placeholder="YYYY-MM-DD">' +
+                            '<i class="manual-date-input-icon fa fa-calendar glyphicon glyphicon-calendar"></i>' +
+                        '</div>' : '') +
                 '</div>' +
                 '<div class="drp-buttons">' +
                     '<span class="drp-selected"></span>' +
-                    '<button class="cancelBtn" type="button"></button>' +
                     '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
+                    '<button class="cancelBtn" type="button"></button>' +
                 '</div>' +
             '</div>';
 
@@ -490,6 +498,8 @@
                 this.updateElement();
 
             this.updateMonthsInView();
+            this.updateView();
+            this.updateCalendars();
         },
 
         inputChanged : function(e) {
@@ -508,7 +518,22 @@
                     this.setEndDate(date);
                 }
                 
+                // Update both calendars to show the relevant months
+                this.leftCalendar.month.month(date.month()).year(date.year());
+                this.rightCalendar.month.month(date.month()).year(date.year()).add(1, 'month');
+                
                 this.updateCalendars();
+                
+                // Trigger the daterangepicker change event
+                this.element.trigger('change');
+                
+                if (!this.linkedCalendars) {
+                    this.updateCalendars();
+                }
+                
+                if (this.autoApply) {
+                    this.clickApply();
+                }
             }
         },
         updateElement: function() {
@@ -561,6 +586,8 @@
                 this.updateElement();
 
             this.updateMonthsInView();
+            this.updateView();
+            this.updateCalendars();
         },
 
         isInvalidDate: function() {
@@ -1074,7 +1101,15 @@
             }
 
         },
-
+        updateView: function() {
+            if (this.timePicker) {
+                this.renderTimePicker('left');
+                this.renderTimePicker('right');
+            }
+            this.updateMonthsInView();
+            this.updateCalendars();
+            this.updateFormInputs();
+        },
         move: function() {
             var parentOffset = { top: 0, left: 0 },
                 containerTop,
