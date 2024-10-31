@@ -122,8 +122,8 @@
                 '</div>' +
                 '<div class="drp-buttons">' +
                     '<span class="drp-selected"></span>' +
-                    '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
                     '<button class="cancelBtn" type="button"></button>' +
+                    '<button class="applyBtn" disabled="disabled" type="button"></button> ' +
                 '</div>' +
             '</div>';
 
@@ -474,6 +474,9 @@
             if (typeof startDate === 'object')
                 this.startDate = moment(startDate);
 
+            if (!this.startDate.isValid())
+                this.startDate = moment().startOf('day');
+
             if (!this.timePicker)
                 this.startDate = this.startDate.startOf('day');
 
@@ -562,6 +565,9 @@
 
             if (typeof endDate === 'object')
                 this.endDate = moment(endDate);
+
+            if (!this.endDate.isValid())
+                this.endDate = moment().endOf('day');
 
             if (!this.timePicker)
                 this.endDate = this.endDate.endOf('day');
